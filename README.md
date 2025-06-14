@@ -15,14 +15,23 @@ In the first three actions, if the played card is a joker, then the player deter
 A few subtleties to note:
 
 • Aces are “universal”: They may be played on any head, and if they are the top card on any head, then any card may be played on them. The only caveat is that if a player plays an ace on an ace, that ends their turn, leaving the universal card free for the next player.
+
 • Jokers are wildcards, but are not universal in the sense that aces are, since their value is restricted by announcing it. A joker can be played as an ace, of course, in which case it is universal.
+
 • A player who’s drawn a card of equal value to an existing head may end their turn, removing any further risk that turn, but also keeping all of the cards they would otherwise have been able to play that turn. Deciding when it’s best to end one’s turn involves strategy.
+
 • A player cannot win in a turn in which they’ve used the reserve, because the reserve card itself is not played.
+
 • Otherwise, a player can win at any point during their turn.
+
 If none of the first four actions apply, and the player does not wish to swap with their reserve, the player must perform the following sequence of actions, called “cutting off” a head:
+
 • Place the played card into their discard pile, face down.
+
 • Place their reserve card, if any, on their draw pile, face down.
+
 • Move every card in the oldest head, face down, into their discard pile.
+
 • With the top two cards from the player’s draw pile (which may include what was formerly their reserve, and may require reshuffling the discard pile if they have insufficient cards in the draw pile), create two new heads by placing the two cards, face up, as two new piles. Any jokers placed in this manner are given the value 2.
 
 Generally speaking, this action will give them more cards, rendering them further away from victory. After that, play continues with the next player. Note however that it is possible to “win by losing”: If the player’s last card does not match any action, they will be forced to cut off a head. But, if the oldest head consists of only a single card, and the player had no reserve at the time, then the two cards they play to create two new heads are their last two cards. They will thus be rendered without any cards, and win!
