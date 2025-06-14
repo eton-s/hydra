@@ -55,3 +55,7 @@ Once the program is run, you play the game through a series of text prompts. Aft
 If a valid action is taken, the game progresses to the next turn, repeating until a winner is determined.
 
 Have fun!
+
+### Testing Mode
+
+For program testing, use the `-testing` argument. This causes the program to prompt the user for each card's value and suit, rather than randomly drawing from the deck.
