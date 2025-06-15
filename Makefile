@@ -5,7 +5,7 @@ DEPENDS = ${OBJECTS:.o=.d}
 EXEC = hydra
 
 ${EXEC} : ${OBJECTS}
-	${CXX} ${CXXFLAGS} ${OBJECTS} -o ${EXEC}
+	${CXX} ${CXXFLAGS} ${OBJECTS} -w -o ${EXEC}
 
 clean :
 	rm ${DEPENDS} ${OBJECTS} ${EXEC}

@@ -5,6 +5,7 @@
 #ifndef _VIEW_H_
 #define _VIEW_H_
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <string>
 #include <exception>
@@ -29,6 +30,16 @@ class View {
     //   * if n heads are active, players have n "plays" per turn
     //   * Returns false iff turn is now over
     bool playerTurn(int pNum);
+    // drawCard() returns a vector of strings representing a card in ASCII art
+    std::vector<std::string> drawCard(const Card& card, bool faceDown = false);
+    // drawCardRow() prints multiple cards side by side
+    void drawCardRow(const std::vector<std::vector<std::string>>& cards);
+    // getCardDisplay() returns formatted display for a card value/suit
+    std::string getCardDisplay(const Card& card);
+    // drawHeadsGraphical() prints heads with ASCII card graphics
+    void drawHeadsGraphical();
+    // drawPlayerHandGraphical() prints player's hand and reserve with graphics
+    void drawPlayerHandGraphical(int pNum, const Card* heldCard = nullptr, int remaining = 0);
     public:
     View(std::istream & in, std::ostream & out);
     // toggleTesting() toggles testing mode

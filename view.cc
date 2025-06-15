@@ -40,16 +40,178 @@ void View::chooseNext(int pNum) {
     // push card to top of draw
     game->players[pNum]->draw->push(std::make_unique<Card>(value, suit[0]));
 }
-void View::outputHeads() {
-    out << "Heads:" << std::endl;
+
+std::vector<std::string> View::drawCard(const Card& card, bool faceDown) {
+    std::vector<std::string> cardLines(7);
+    
+    if (faceDown) {
+        cardLines[0] = "┌─────────┐";
+        cardLines[1] = "│░░░░░░░░░│";
+        cardLines[2] = "│░░░░░░░░░│";
+        cardLines[3] = "│░░░░░░░░░│";
+        cardLines[4] = "│░░░░░░░░░│";
+        cardLines[5] = "│░░░░░░░░░│";
+        cardLines[6] = "└─────────┘";
+        return cardLines;
+    }
+    
+    std::string display = getCardDisplay(card);
+    std::string suit;
+    
+    if (card.isJoker()) {
+        suit = "★";
+    } else {
+        char suitChar = card.getSuit();
+        switch (suitChar) {
+            case 'S': suit = "♠"; break;
+            case 'H': suit = "♥"; break;
+            case 'C': suit = "♣"; break;
+            case 'D': suit = "♦"; break;
+            default: suit = "?"; break;
+        }
+    }
+    
+    cardLines[0] = "┌─────────┐";
+    cardLines[1] = "│" + std::string(9 - display.length(), ' ') + display + "│";
+    cardLines[2] = "│         │";
+    cardLines[3] = "│    " + suit + "    │";
+    cardLines[4] = "│         │";
+    cardLines[5] = "│" + display + std::string(9 - display.length(), ' ') + "│";
+    cardLines[6] = "└─────────┘";
+    
+    return cardLines;
+}
+
+void View::drawCardRow(const std::vector<std::vector<std::string>>& cards) {
+    if (cards.empty()) return;
+    
+    for (int line = 0; line < 7; ++line) {
+        for (size_t i = 0; i < cards.size(); ++i) {
+            out << cards[i][line];
+            if (i < cards.size() - 1) out << " ";
+        }
+        out << std::endl;
+    }
+}
+
+std::string View::getCardDisplay(const Card& card) {
+    if (card.isJoker()) {
+        return "JOKER";
+    }
+    
+    std::string value = card.cardString();
+    // Remove suit character from the end
+    if (value.length() > 1) {
+        value = value.substr(0, value.length() - 1);
+    }
+    return value;
+}
+
+void View::drawHeadsGraphical() {
+    out << "═══════════════════════════════════════════════════════════════════════════════" << std::endl;
+    out << "                                    HEADS                                      " << std::endl;
+    out << "═══════════════════════════════════════════════════════════════════════════════" << std::endl;
+    
+    std::vector<std::vector<std::string>> headCards;
+    std::vector<int> headNumbers;
+    std::vector<int> headSizes;
+    
+    // Collect active heads
     for (int i = 0; i < int(game->heads.size()); i++) {
         if (!game->heads[i]->isEmpty()) {
-            out << i + 1 << ": " << game->heads[i]->top().cardString();
-            out << " (" << game->heads[i]->pileSize() << ")" << std::endl;
+            headCards.push_back(drawCard(game->heads[i]->top()));
+            headNumbers.push_back(i + 1);
+            headSizes.push_back(game->heads[i]->pileSize());
         }
+    }
+    
+    if (!headCards.empty()) {
+        // Draw cards
+        drawCardRow(headCards);
+        
+        // Draw head numbers and sizes
+        out << std::endl;
+        for (size_t i = 0; i < headNumbers.size(); ++i) {
+            std::ostringstream oss;
+            oss << "Head " << headNumbers[i] << " (" << headSizes[i] << ")";
+            std::string label = oss.str();
+            
+            // Center the label under each card (cards are 11 chars wide)
+            int padding = (11 - label.length()) / 2;
+            out << std::string(padding, ' ') << label << std::string(11 - padding - label.length(), ' ');
+            if (i < headNumbers.size() - 1) out << " ";
+        }
+        out << std::endl;
     }
     out << std::endl;
 }
+
+void View::drawPlayerHandGraphical(int pNum, const Card* heldCard, int remaining) {
+    out << "───────────────────────────────────────────────────────────────────────────────" << std::endl;
+    out << "                              PLAYER " << (pNum + 1) << " STATUS                              " << std::endl;
+    out << "───────────────────────────────────────────────────────────────────────────────" << std::endl;
+    
+    std::vector<std::vector<std::string>> playerCards;
+    std::vector<std::string> cardLabels;
+    
+    // Add held card if provided
+    if (heldCard != nullptr) {
+        playerCards.push_back(drawCard(*heldCard));
+        cardLabels.push_back("IN HAND");
+    }
+    
+    // Add reserve card if exists
+    if (game->players[pNum]->reserve != nullptr) {
+        playerCards.push_back(drawCard(*(game->players[pNum]->reserve)));
+        cardLabels.push_back("RESERVE");
+    }
+    
+    // Add face-down draw pile representation
+    if (!game->players[pNum]->draw->isEmpty()) {
+        playerCards.push_back(drawCard(Card("A", 'S'), true)); // Face down
+        std::ostringstream oss;
+        int drawSize = game->players[pNum]->draw->pileSize();
+        if (heldCard != nullptr) drawSize--; // Card is in hand
+        oss << "DRAW (" << drawSize << ")";
+        cardLabels.push_back(oss.str());
+    }
+    
+    // Add face-down discard pile representation if not empty
+    if (!game->players[pNum]->discard->isEmpty()) {
+        playerCards.push_back(drawCard(Card("A", 'S'), true)); // Face down
+        std::ostringstream oss;
+        oss << "DISCARD (" << game->players[pNum]->discard->pileSize() << ")";
+        cardLabels.push_back(oss.str());
+    }
+    
+    if (!playerCards.empty()) {
+        // Draw cards
+        drawCardRow(playerCards);
+        
+        // Draw labels
+        out << std::endl;
+        for (size_t i = 0; i < cardLabels.size(); ++i) {
+            std::string label = cardLabels[i];
+            // Center the label under each card (cards are 11 chars wide)
+            int padding = (11 - label.length()) / 2;
+            out << std::string(padding, ' ') << label << std::string(11 - padding - label.length(), ' ');
+            if (i < cardLabels.size() - 1) out << " ";
+        }
+        out << std::endl;
+    }
+    
+    // Show remaining plays if applicable
+    if (remaining > 0) {
+        out << std::endl << "Remaining plays this turn: " << remaining << std::endl;
+    }
+    
+    out << std::endl;
+}
+
+void View::outputHeads() {
+    drawHeadsGraphical();
+}
+
 void View::outputPlayers(int turn, int remaining) {
     out << "Players:" << std::endl;
     for (int i = 0; i < int(game->players.size()); i++) {
@@ -67,6 +229,7 @@ void View::outputPlayers(int turn, int remaining) {
     }
     out << std::endl;
 }
+
 bool View::playerTurn(int pNum) {
     game->players[pNum]->fillDraw();
     if (game->players[pNum]->draw->isEmpty()) return false;
@@ -75,6 +238,8 @@ bool View::playerTurn(int pNum) {
     if (testing) chooseNext(pNum);
     std::unique_ptr<Card> held = game->players[pNum]->popDraw();
     do {
+        // Show graphical representation of player's hand and status
+        drawPlayerHandGraphical(pNum, held.get(), 0);
         // output turn message
         out << "Player " << pNum + 1 << ", you are holding a ";
         if (held->isJoker()) {
@@ -149,9 +314,10 @@ bool View::playerTurn(int pNum) {
                 break;
             }
         }
-    } while (1);
+    } while (true);
     return true;
 }
+
 void View::playGame() {
     std::string input;
     // read in # of players
